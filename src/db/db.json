@@ -1,0 +1,49 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Becca",
+      "alias": "bshap27",
+      "countries": ["1", "2"]
+    },
+    {
+      "id": "2",
+      "name": "Melissa",
+      "alias": "m7shaps",
+      "countries": ["1", "3"]
+    }
+  ],
+  "countries": [
+    {
+      "id": "1",
+      "name": "United States",
+      "code": "US"
+    },
+    {
+      "id": "2",
+      "name": "Morocco",
+      "code": "MA"
+    },
+    {
+      "id": "3",
+      "name": "Spain",
+      "code": "ES"
+    }
+  ],
+  "posts": [
+    {
+      "id": "1",
+      "title": "Hello World",
+      "content": "Morocco Itinerary",
+      "countryId": "2",
+      "authorId": "1"
+    },
+    {
+      "id": "2",
+      "title": "Another Post",
+      "content": "Spain Itinerary",
+      "countryId": "3",
+      "authorId": "2"
+    }
+  ]
+}
