@@ -1,7 +1,13 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { MongoDBAdapter } from "@auth/mongodb-adapter"
+import clientPromise from "@/lib/mongodb-adapter"
+import User from "@/models/User"
+import connectDB from "@/lib/mongodb"
+import bcrypt from "bcryptjs"
 
 const handler = NextAuth({
+  adapter: MongoDBAdapter(clientPromise),
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -10,25 +16,53 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // This is where you would typically validate against your database
-        // For demo purposes, we'll use a hardcoded user
-        if (credentials?.email === "demo@example.com" && credentials?.password === "demo") {
-          return {
-            id: "1",
-            email: "demo@example.com",
-            name: "Demo User",
-          }
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Please enter an email and password')
         }
-        return null
+
+        await connectDB()
+
+        const user = await User.findOne({ email: credentials.email })
+
+        if (!user) {
+          throw new Error('No user found with this email')
+        }
+
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+        if (!isPasswordValid) {
+          throw new Error('Invalid password')
+        }
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        }
       }
     })
   ],
-  pages: {
-    signIn: '/auth/signin',
-  },
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: '/auth/signin',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+      }
+      return session
+    }
+  }
 })
 
 export { handler as GET, handler as POST } 

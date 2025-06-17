@@ -1,13 +1,11 @@
 'use client'
 
-import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { FormEvent, useState } from "react"
-import Link from "next/link"
+import { FormEvent, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
-export default function SignIn() {
+export default function Register() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -15,25 +13,33 @@ export default function SignIn() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-    
+
     const formData = new FormData(e.currentTarget)
-    
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+    }
+
     try {
-      const res = await signIn("credentials", {
-        email: formData.get("email"),
-        password: formData.get("password"),
-        redirect: false,
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       })
 
-      if (res?.error) {
-        setError("Invalid credentials")
-        return
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Something went wrong')
       }
 
-      router.push("/")
-      router.refresh()
+      // Redirect to sign in page after successful registration
+      router.push('/auth/signin?registered=true')
     } catch (error) {
-      setError("Something went wrong")
+      setError(error instanceof Error ? error.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -44,16 +50,24 @@ export default function SignIn() {
       <div className="w-full max-w-md space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
-            Sign in to your account
+            Create your account
           </h2>
-          {searchParams.get('registered') && (
-            <p className="mt-2 text-center text-sm text-green-600">
-              Account created successfully! Please sign in.
-            </p>
-          )}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+          <div className="space-y-4 rounded-md shadow-sm">
+            <div>
+              <label htmlFor="name" className="sr-only">
+                Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                className="relative block w-full rounded-t-md border-0 py-1.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
+                placeholder="Name"
+              />
+            </div>
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
@@ -63,7 +77,7 @@ export default function SignIn() {
                 name="email"
                 type="email"
                 required
-                className="relative block w-full rounded-t-md border-0 py-1.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
+                className="relative block w-full border-0 py-1.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
                 placeholder="Email address"
               />
             </div>
@@ -92,16 +106,16 @@ export default function SignIn() {
               disabled={loading}
               className="group relative flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </div>
 
           <div className="text-sm text-center">
             <Link
-              href="/auth/register"
+              href="/auth/signin"
               className="font-medium text-indigo-600 hover:text-indigo-500"
             >
-              Don't have an account? Register
+              Already have an account? Sign in
             </Link>
           </div>
         </form>
