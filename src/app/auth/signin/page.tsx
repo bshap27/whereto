@@ -96,7 +96,13 @@ export default function SignIn() {
             </button>
           </div>
 
-          <div className="text-sm text-center">
+          <div className="flex flex-col space-y-2 text-sm text-center">
+            <Link
+              href="/auth/forgot-password"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Forgot your password?
+            </Link>
             <Link
               href="/auth/register"
               className="font-medium text-indigo-600 hover:text-indigo-500"
