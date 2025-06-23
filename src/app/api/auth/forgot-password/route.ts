@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import crypto from 'crypto';
+import { sendPasswordResetEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,17 +42,29 @@ export async function POST(request: NextRequest) {
     user.resetTokenExpiry = resetTokenExpiry;
     await user.save();
 
-    // In a real application, you would send an email here
-    // For now, we'll log the reset link to the console
+    // Create reset URL
     const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`;
     
-    console.log('Password reset link:', resetUrl);
-    console.log('This would be sent via email in production');
-
-    return NextResponse.json(
-      { message: 'If an account with that email exists, a password reset link has been sent.' },
-      { status: 200 }
-    );
+    try {
+      // Send email
+      await sendPasswordResetEmail(email, resetUrl);
+      
+      return NextResponse.json(
+        { message: 'If an account with that email exists, a password reset link has been sent.' },
+        { status: 200 }
+      );
+    } catch (emailError) {
+      // If email fails, clean up the token and return error
+      user.resetToken = undefined;
+      user.resetTokenExpiry = undefined;
+      await user.save();
+      
+      console.error('Email sending failed:', emailError);
+      return NextResponse.json(
+        { error: 'Failed to send password reset email. Please try again later.' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Password reset request error:', error);
     return NextResponse.json(
