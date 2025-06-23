@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:staging": "NODE_ENV=staging next build",
     "start": "next start",
+    "start:staging": "NODE_ENV=staging next start",
     "lint": "next lint"
   },
   "dependencies": {

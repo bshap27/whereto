@@ -62,7 +62,16 @@ const handler = NextAuth({
       }
       return session
     }
-  }
+  },
+  // Environment-specific configuration
+  ...(process.env.NODE_ENV === 'production' && {
+    // Production settings
+    useSecureCookies: true,
+  }),
+  ...(process.env.NODE_ENV && process.env.NODE_ENV.includes('staging') && {
+    // Staging settings - similar to production but with staging-specific options
+    useSecureCookies: true,
+  })
 })
 
 export { handler as GET, handler as POST } 
