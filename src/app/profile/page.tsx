@@ -20,7 +20,6 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   // Redirect if not authenticated
@@ -53,8 +52,6 @@ export default function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError(null)
-    setSuccess(null)
 
     try {
       const response = await fetch('/api/profile', {
@@ -72,10 +69,10 @@ export default function Profile() {
         setSuccess('Profile updated successfully!')
         setIsEditing(false)
       } else {
-        setError(data.error || 'Failed to update profile')
+        console.error('Failed to update profile:', data.error || 'Unknown error')
       }
     } catch (error) {
-      setError('Something went wrong')
+      console.error('Something went wrong:', error)
     } finally {
       setLoading(false)
     }
@@ -109,12 +106,6 @@ export default function Profile() {
                 </button>
               )}
             </div>
-
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
 
             {success && (
               <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
@@ -183,7 +174,6 @@ export default function Profile() {
                       onClick={() => {
                         setIsEditing(false)
                         setFormData({ name: profile.name, email: profile.email })
-                        setError(null)
                       }}
                       className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
                     >

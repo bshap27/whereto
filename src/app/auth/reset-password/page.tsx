@@ -59,8 +59,8 @@ export default function ResetPassword() {
       } else {
         setError(data.error || 'Something went wrong');
       }
-    } catch (err) {
-      setError('Something went wrong');
+    } catch {
+      setMessage('Something went wrong')
     } finally {
       setIsLoading(false);
     }
