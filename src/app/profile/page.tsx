@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useRequireAuthRedirect } from '@/hooks/useRequireAuthRedirect'
 
 interface UserProfile {
   _id: string
@@ -15,19 +16,13 @@ interface UserProfile {
 
 export default function Profile() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin')
-    }
-  }, [status, router])
+  useRequireAuthRedirect()
 
   // Fetch profile data
   useEffect(() => {
