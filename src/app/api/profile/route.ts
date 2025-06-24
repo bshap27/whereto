@@ -60,8 +60,10 @@ export async function PUT(req: Request) {
     
     // Check if email is already taken by another user
     const existingUser = await User.findOne({ 
-      email, 
-      _id: { $ne: session.user.id } 
+      $and: [
+        { email },
+        { email: { $ne: session.user.email } }
+      ]
     })
     
     if (existingUser) {
