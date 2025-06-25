@@ -4,7 +4,7 @@ jest.mock('next/server')
 import { POST } from './route'
 import User from '@/models/User'
 import bcrypt from 'bcryptjs'
-import { USER_ERRORS, SERVICE_ERRORS } from '@/constants/errors'
+import { USER_ERRORS, SERVICE_ERRORS, API_ERRORS } from '@/constants/errors'
 
 // Mock the User model
 jest.mock('@/models/User')
@@ -64,7 +64,7 @@ describe('/api/register', () => {
 
       // Assert
       expect(response.status).toBe(201)
-      expect(data.message).toBe('User created successfully')
+      expect(data.message).toBe(API_ERRORS.USER_CREATED_SUCCESS)
       expect(data.user).toEqual({
         id: 'user123',
         name: 'John Doe',
@@ -139,7 +139,7 @@ describe('/api/register', () => {
 
       // Mock User.findOne to throw error
       ;(mockUser.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+        select: jest.fn().mockRejectedValue(new Error(SERVICE_ERRORS.DATABASE_CONNECTION_FAILED))
       })
 
       // Act
@@ -166,7 +166,7 @@ describe('/api/register', () => {
       })
 
       // Mock bcrypt.hash to throw error
-      ;(mockBcrypt.hash as jest.Mock).mockRejectedValue(new Error('Hashing failed'))
+      ;(mockBcrypt.hash as jest.Mock).mockRejectedValue(new Error(SERVICE_ERRORS.HASHING_FAILED))
 
       // Act
       const request = createRequest(userData)

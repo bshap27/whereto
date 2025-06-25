@@ -4,25 +4,25 @@ jest.mock('@/lib/mongodb', () => ({
   default: jest.fn().mockResolvedValue(undefined),
 }));
 
+const { ERROR_MESSAGES } = require('./src/constants/errors');
+
 // Import whatwg-fetch to provide proper Fetch API for Jest + jsdom
 require('whatwg-fetch')
 
-// Suppress console.error during tests
+// Suppress console.error for expected test errors
 const originalError = console.error;
 console.error = (...args) => {
-  // Only suppress specific error messages that are expected during tests
   const message = args[0];
-  if (typeof message === 'string' && (
-    message.includes('Registration error:') ||
-    message.includes('Please provide all required fields') ||
-    message.includes('User already exists') ||
-    message.includes('Database connection failed') ||
-    message.includes('String error') ||
-    message.includes('Profile fetch error:') ||
-    message.includes('Profile update error:')
-  )) {
-    return; // Suppress these expected test errors
+  const errorMessages = [
+    ...Object.values(ERROR_MESSAGES),
+    'Warning: ReactDOM.render is no longer supported',
+    'Warning: useLayoutEffect does nothing on the server',
+  ];
+  if (
+    typeof message === 'string' &&
+    errorMessages.some(errMsg => message.includes(errMsg))
+  ) {
+    return;
   }
-  // Allow other console.error messages to pass through
-  originalError.apply(console, args);
+  originalError.call(console, ...args);
 }; 

@@ -2,6 +2,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { UserService } from './userService';
 import User from '@/models/User';
+import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS } from '@/constants/errors';
 
 describe('UserService (integration with mongodb-memory-server)', () => {
   let mongoServer: MongoMemoryServer;
@@ -41,7 +42,7 @@ describe('UserService (integration with mongodb-memory-server)', () => {
   });
 
   it('throws if required fields are missing', async () => {
-    await expect(userService.createUser({} as any)).rejects.toThrow('Please provide all required fields');
+    await expect(userService.createUser({} as any)).rejects.toThrow(USER_ERRORS.REQUIRED_FIELDS_MISSING);
   });
 
   it('throws if user already exists', async () => {
@@ -51,7 +52,7 @@ describe('UserService (integration with mongodb-memory-server)', () => {
       password: 'password123',
     };
     await userService.createUser(userData);
-    await expect(userService.createUser(userData)).rejects.toThrow('User already exists');
+    await expect(userService.createUser(userData)).rejects.toThrow(USER_ERRORS.USER_ALREADY_EXISTS);
   });
 
   it('finds user by email', async () => {
@@ -88,11 +89,11 @@ describe('UserService (integration with mongodb-memory-server)', () => {
     const user2 = { name: 'Frank', email: 'frank@example.com', password: 'password123' };
     await userService.createUser(user1);
     await userService.createUser(user2);
-    await expect(userService.updateUser(user2.email, { email: user1.email })).rejects.toThrow('Email is already taken');
+    await expect(userService.updateUser(user2.email, { email: user1.email })).rejects.toThrow(USER_ERRORS.EMAIL_ALREADY_TAKEN);
   });
 
   it('throws when updating a non-existent user', async () => {
-    await expect(userService.updateUser('ghost@example.com', { name: 'Ghost' })).rejects.toThrow('User not found');
+    await expect(userService.updateUser('ghost@example.com', { name: 'Ghost' })).rejects.toThrow(AUTH_ERRORS.USER_NOT_FOUND);
   });
 
   describe('Password Reset', () => {
@@ -117,7 +118,7 @@ describe('UserService (integration with mongodb-memory-server)', () => {
     });
 
     it('throws when generating reset token for non-existent user', async () => {
-      await expect(userService.generateResetToken('nonexistent@example.com')).rejects.toThrow('User not found');
+      await expect(userService.generateResetToken('nonexistent@example.com')).rejects.toThrow(AUTH_ERRORS.USER_NOT_FOUND);
     });
 
     it('resets password with valid token', async () => {
@@ -143,7 +144,7 @@ describe('UserService (integration with mongodb-memory-server)', () => {
     });
 
     it('throws when resetting password with invalid token', async () => {
-      await expect(userService.resetPassword('invalid-token', 'newpassword123')).rejects.toThrow('Invalid or expired reset token');
+      await expect(userService.resetPassword('invalid-token', 'newpassword123')).rejects.toThrow(AUTH_ERRORS.INVALID_RESET_TOKEN);
     });
 
     it('throws when resetting password with short password', async () => {
@@ -156,7 +157,7 @@ describe('UserService (integration with mongodb-memory-server)', () => {
 
       const { resetToken } = await userService.generateResetToken(userData.email);
 
-      await expect(userService.resetPassword(resetToken, '123')).rejects.toThrow('Password must be at least 6 characters long');
+      await expect(userService.resetPassword(resetToken, '123')).rejects.toThrow(VALIDATION_ERRORS.PASSWORD_TOO_SHORT);
     });
 
     it('clears reset token', async () => {

@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
 import crypto from 'crypto'
-import { USER_ERRORS, AUTH_ERRORS } from '@/constants/errors'
+import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS } from '@/constants/errors'
 
 export interface CreateUserData {
   name: string
@@ -97,7 +97,7 @@ export class UserService {
     
     const user = await this.findUserByEmail(email)
     if (!user) {
-      throw new Error('User not found')
+      throw new Error(AUTH_ERRORS.USER_NOT_FOUND)
     }
 
     // Generate reset token
@@ -125,7 +125,7 @@ export class UserService {
     await connectDB()
 
     if (newPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters long')
+      throw new Error(VALIDATION_ERRORS.PASSWORD_TOO_SHORT)
     }
 
     // Hash the token to compare with stored hash
@@ -141,7 +141,7 @@ export class UserService {
     })
 
     if (!user) {
-      throw new Error('Invalid or expired reset token')
+      throw new Error(AUTH_ERRORS.INVALID_RESET_TOKEN)
     }
 
     // Hash the new password

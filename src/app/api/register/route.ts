@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { UserService } from '@/services/userService'
-import { SERVICE_ERRORS, API_ERRORS } from '@/constants/errors'
+import { SERVICE_ERRORS, API_ERRORS, USER_ERRORS } from '@/constants/errors'
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { 
-        message: 'User created successfully',
+        message: API_ERRORS.USER_CREATED_SUCCESS,
         user
       },
       { status: 201 }
@@ -21,13 +21,13 @@ export async function POST(req: Request) {
     
     // Handle specific error types
     if (error instanceof Error) {
-      if (error.message === 'Please provide all required fields') {
+      if (error.message === USER_ERRORS.REQUIRED_FIELDS_MISSING) {
         return NextResponse.json(
           { error: error.message },
           { status: 400 }
         )
       }
-      if (error.message === 'User already exists') {
+      if (error.message === USER_ERRORS.USER_ALREADY_EXISTS) {
         return NextResponse.json(
           { error: error.message },
           { status: 400 }

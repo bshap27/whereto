@@ -3,6 +3,7 @@ export const AUTH_ERRORS = {
   NOT_AUTHENTICATED: 'Not authenticated',
   USER_NOT_FOUND: 'User not found',
   INVALID_PASSWORD: 'Invalid password',
+  INVALID_RESET_TOKEN: 'Invalid or expired reset token',
 } as const
 
 // User Registration & Profile Errors
@@ -28,12 +29,13 @@ export const API_ERRORS = {
   PROFILE_FETCH_ERROR: 'Profile fetch error:',
   PROFILE_UPDATE_ERROR: 'Profile update error:',
   REGISTRATION_ERROR: 'Registration error:',
+  USER_CREATED_SUCCESS: 'User created successfully',
 } as const
 
 // Validation Errors
 export const VALIDATION_ERRORS = {
   INVALID_EMAIL: 'Invalid email format',
-  PASSWORD_TOO_SHORT: 'Password must be at least 6 characters',
+  PASSWORD_TOO_SHORT: 'Password must be at least 6 characters long',
   INVALID_NAME: 'Name must be at least 2 characters',
 } as const
 

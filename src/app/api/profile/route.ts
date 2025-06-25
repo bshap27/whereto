@@ -61,9 +61,9 @@ export async function PUT(req: Request) {
       return NextResponse.json(user)
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message === 'Email is already taken') {
+        if (error.message.includes(USER_ERRORS.EMAIL_ALREADY_TAKEN)) {
           return NextResponse.json(
-            { error: 'Email is already taken' },
+            { error: error.message },
             { status: 409 }
           )
         }
