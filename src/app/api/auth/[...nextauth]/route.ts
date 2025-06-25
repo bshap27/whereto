@@ -2,10 +2,8 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import clientPromise from "@/lib/mongodb-adapter"
-import User from "@/models/User"
 import connectDB from "@/lib/mongodb"
-import bcrypt from "bcryptjs"
-import { USER_ERRORS, AUTH_ERRORS } from "@/constants/response_messages"
+import { credentialsAuthorize } from "@/services/auth/credentialsAuthorize"
 
 const handler = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
@@ -17,30 +15,8 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error(USER_ERRORS.EMAIL_AND_PASSWORD_REQUIRED)
-        }
-
         await connectDB()
-
-        const user = await User.findOne({ email: credentials.email })
-
-        if (!user) {
-          throw new Error(AUTH_ERRORS.USER_NOT_FOUND)
-        }
-
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-
-        if (!isPasswordValid) {
-          throw new Error(AUTH_ERRORS.INVALID_PASSWORD)
-        }
-
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        }
+        return credentialsAuthorize(credentials)
       }
     })
   ],
