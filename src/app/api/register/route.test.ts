@@ -2,16 +2,17 @@
 jest.mock('next/server')
 
 import { POST } from './route'
-import { UserService } from '@/services/userService'
+import User from '@/models/User'
+import bcrypt from 'bcryptjs'
 
-// Mock the UserService
-jest.mock('@/services/userService', () => ({
-  UserService: jest.fn().mockImplementation(() => ({
-    createUser: jest.fn()
-  }))
-}))
+// Mock the User model
+jest.mock('@/models/User')
 
-const mockUserService = UserService as jest.MockedClass<typeof UserService>
+// Mock bcrypt
+jest.mock('bcryptjs')
+
+const mockUser = User as jest.MockedClass<typeof User>
+const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>
 
 describe('/api/register', () => {
   beforeEach(() => {
@@ -37,16 +38,21 @@ describe('/api/register', () => {
         password: 'password123'
       }
       
-      const mockUser = {
-        id: 'user123',
+      const mockUserDoc = {
+        _id: 'user123',
         name: 'John Doe',
-        email: 'john@example.com'
+        email: 'john@example.com',
+        password: 'hashedPassword123'
       }
 
-      const mockCreateUser = jest.fn().mockResolvedValue(mockUser)
-      mockUserService.mockImplementation(() => ({
-        createUser: mockCreateUser
-      } as any))
+      // Mock bcrypt hash
+      ;(mockBcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword123')
+
+      // Mock User.findOne - no existing user
+      ;(mockUser.findOne as jest.Mock).mockResolvedValue(null)
+
+      // Mock User.create
+      ;(mockUser.create as jest.Mock).mockResolvedValue(mockUserDoc)
 
       // Act
       const request = createRequest(userData)
@@ -56,22 +62,27 @@ describe('/api/register', () => {
       // Assert
       expect(response.status).toBe(201)
       expect(data.message).toBe('User created successfully')
-      expect(data.user).toEqual(mockUser)
-      expect(mockCreateUser).toHaveBeenCalledWith(userData)
+      expect(data.user).toEqual({
+        id: 'user123',
+        name: 'John Doe',
+        email: 'john@example.com'
+      })
+      expect(mockUser.findOne).toHaveBeenCalledWith({ email: 'john@example.com' })
+      expect(mockBcrypt.hash).toHaveBeenCalledWith('password123', 10)
+      expect(mockUser.create).toHaveBeenCalledWith({
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'hashedPassword123'
+      })
     })
 
-    it('returns 400 when UserService throws validation error', async () => {
+    it('returns 400 when required fields are missing', async () => {
       // Arrange
       const userData = {
         name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123'
+        email: 'john@example.com'
+        // password missing
       }
-
-      const mockCreateUser = jest.fn().mockRejectedValue(new Error('Please provide all required fields'))
-      mockUserService.mockImplementation(() => ({
-        createUser: mockCreateUser
-      } as any))
 
       // Act
       const request = createRequest(userData)
@@ -81,9 +92,11 @@ describe('/api/register', () => {
       // Assert
       expect(response.status).toBe(400)
       expect(data.error).toBe('Please provide all required fields')
+      expect(mockUser.findOne).not.toHaveBeenCalled()
+      expect(mockUser.create).not.toHaveBeenCalled()
     })
 
-    it('returns 400 when UserService throws duplicate user error', async () => {
+    it('returns 400 when user already exists', async () => {
       // Arrange
       const userData = {
         name: 'John Doe',
@@ -91,10 +104,13 @@ describe('/api/register', () => {
         password: 'password123'
       }
 
-      const mockCreateUser = jest.fn().mockRejectedValue(new Error('User already exists'))
-      mockUserService.mockImplementation(() => ({
-        createUser: mockCreateUser
-      } as any))
+      const existingUser = {
+        _id: 'existing123',
+        email: 'john@example.com'
+      }
+
+      // Mock User.findOne - existing user found
+      ;(mockUser.findOne as jest.Mock).mockResolvedValue(existingUser)
 
       // Act
       const request = createRequest(userData)
@@ -104,9 +120,11 @@ describe('/api/register', () => {
       // Assert
       expect(response.status).toBe(400)
       expect(data.error).toBe('User already exists')
+      expect(mockUser.findOne).toHaveBeenCalledWith({ email: 'john@example.com' })
+      expect(mockUser.create).not.toHaveBeenCalled()
     })
 
-    it('returns 500 when UserService throws unexpected error', async () => {
+    it('returns 500 when database throws error', async () => {
       // Arrange
       const userData = {
         name: 'John Doe',
@@ -114,10 +132,8 @@ describe('/api/register', () => {
         password: 'password123'
       }
 
-      const mockCreateUser = jest.fn().mockRejectedValue(new Error('Database connection failed'))
-      mockUserService.mockImplementation(() => ({
-        createUser: mockCreateUser
-      } as any))
+      // Mock User.findOne to throw error
+      ;(mockUser.findOne as jest.Mock).mockRejectedValue(new Error('Database connection failed'))
 
       // Act
       const request = createRequest(userData)
@@ -129,7 +145,7 @@ describe('/api/register', () => {
       expect(data.error).toBe('Error creating user')
     })
 
-    it('returns 500 when UserService throws non-Error object', async () => {
+    it('returns 500 when bcrypt throws error', async () => {
       // Arrange
       const userData = {
         name: 'John Doe',
@@ -137,10 +153,11 @@ describe('/api/register', () => {
         password: 'password123'
       }
 
-      const mockCreateUser = jest.fn().mockRejectedValue('String error')
-      mockUserService.mockImplementation(() => ({
-        createUser: mockCreateUser
-      } as any))
+      // Mock User.findOne - no existing user
+      ;(mockUser.findOne as jest.Mock).mockResolvedValue(null)
+
+      // Mock bcrypt.hash to throw error
+      ;(mockBcrypt.hash as jest.Mock).mockRejectedValue(new Error('Hashing failed'))
 
       // Act
       const request = createRequest(userData)
