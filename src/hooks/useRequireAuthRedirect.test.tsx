@@ -1,4 +1,6 @@
-// @jest-environment jsdom
+/**
+ * @jest-environment jsdom
+ */
 import { renderHook } from '@testing-library/react'
 import { useRequireAuthRedirect } from './useRequireAuthRedirect'
 import * as nextAuthReact from 'next-auth/react'
