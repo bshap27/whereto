@@ -4,7 +4,7 @@ jest.mock('@/lib/mongodb', () => ({
   default: jest.fn().mockResolvedValue(undefined),
 }));
 
-const { ERROR_MESSAGES } = require('./src/constants/errors');
+const { ERROR_MESSAGES } = require('./src/constants/response_messages');
 
 // Import whatwg-fetch to provide proper Fetch API for Jest + jsdom
 require('whatwg-fetch')

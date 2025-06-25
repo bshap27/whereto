@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { UserService } from '@/services/userService'
-import { AUTH_ERRORS, API_ERRORS, SERVICE_ERRORS, USER_ERRORS } from '@/constants/errors'
+import { AUTH_ERRORS, API_ERRORS, SERVICE_ERRORS, USER_ERRORS } from '@/constants/response_messages'
 
 // GET - Fetch user profile
 export async function GET() {

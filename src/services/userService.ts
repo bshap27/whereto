@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
 import crypto from 'crypto'
-import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS } from '@/constants/errors'
+import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS } from '@/constants/response_messages'
 
 export interface CreateUserData {
   name: string

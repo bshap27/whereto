@@ -4,7 +4,7 @@ jest.mock('next/server')
 import { POST } from './route'
 import User from '@/models/User'
 import bcrypt from 'bcryptjs'
-import { USER_ERRORS, SERVICE_ERRORS, API_ERRORS } from '@/constants/errors'
+import { USER_ERRORS, SERVICE_ERRORS, API_ERRORS, API_SUCCESS_MESSAGES } from '@/constants/response_messages'
 
 // Mock the User model
 jest.mock('@/models/User')
@@ -64,7 +64,7 @@ describe('/api/register', () => {
 
       // Assert
       expect(response.status).toBe(201)
-      expect(data.message).toBe(API_ERRORS.USER_CREATED_SUCCESS)
+      expect(data.message).toBe(API_SUCCESS_MESSAGES.USER_CREATED_SUCCESS)
       expect(data.user).toEqual({
         id: 'user123',
         name: 'John Doe',

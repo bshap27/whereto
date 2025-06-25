@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { GET, PUT } from './route'
 import User from '@/models/User'
-import { AUTH_ERRORS, USER_ERRORS, SERVICE_ERRORS } from '@/constants/errors'
+import { AUTH_ERRORS, USER_ERRORS, SERVICE_ERRORS } from '@/constants/response_messages'
 
 // Mock next-auth
 jest.mock('next-auth')

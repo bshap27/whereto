@@ -29,7 +29,6 @@ export const API_ERRORS = {
   PROFILE_FETCH_ERROR: 'Profile fetch error:',
   PROFILE_UPDATE_ERROR: 'Profile update error:',
   REGISTRATION_ERROR: 'Registration error:',
-  USER_CREATED_SUCCESS: 'User created successfully',
 } as const
 
 // Validation Errors
@@ -37,6 +36,10 @@ export const VALIDATION_ERRORS = {
   INVALID_EMAIL: 'Invalid email format',
   PASSWORD_TOO_SHORT: 'Password must be at least 6 characters long',
   INVALID_NAME: 'Name must be at least 2 characters',
+} as const
+
+export const API_SUCCESS_MESSAGES = {
+  USER_CREATED_SUCCESS: 'User created successfully',
 } as const
 
 // All error messages combined for easy access

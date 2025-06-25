@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { UserService } from '@/services/userService'
-import { SERVICE_ERRORS, API_ERRORS, USER_ERRORS } from '@/constants/errors'
+import { SERVICE_ERRORS, API_ERRORS, API_SUCCESS_MESSAGES, USER_ERRORS } from '@/constants/response_messages'
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { 
-        message: API_ERRORS.USER_CREATED_SUCCESS,
+        message: API_SUCCESS_MESSAGES.USER_CREATED_SUCCESS,
         user
       },
       { status: 201 }

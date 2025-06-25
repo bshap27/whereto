@@ -2,7 +2,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { UserService } from './userService';
 import User from '@/models/User';
-import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS } from '@/constants/errors';
+import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS } from '@/constants/response_messages';
 
 describe('UserService (integration with mongodb-memory-server)', () => {
   let mongoServer: MongoMemoryServer;

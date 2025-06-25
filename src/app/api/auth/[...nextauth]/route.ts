@@ -5,7 +5,7 @@ import clientPromise from "@/lib/mongodb-adapter"
 import User from "@/models/User"
 import connectDB from "@/lib/mongodb"
 import bcrypt from "bcryptjs"
-import { USER_ERRORS, AUTH_ERRORS } from "@/constants/errors"
+import { USER_ERRORS, AUTH_ERRORS } from "@/constants/response_messages"
 
 const handler = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
