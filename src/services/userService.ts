@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
+import crypto from 'crypto'
 
 export interface CreateUserData {
   name: string
@@ -12,6 +13,11 @@ export interface UserResponse {
   id: string
   name: string
   email: string
+}
+
+export interface ResetTokenData {
+  resetToken: string
+  resetTokenExpiry: Date
 }
 
 export class UserService {
@@ -82,6 +88,84 @@ export class UserService {
       id: user._id.toString(),
       name: user.name,
       email: user.email,
+    }
+  }
+
+  async findUserByEmailForPasswordReset(email: string) {
+    await connectDB()
+    return User.findOne({ email })
+  }
+
+  async generateResetToken(email: string): Promise<ResetTokenData> {
+    await connectDB()
+    
+    const user = await User.findOne({ email })
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex')
+    const resetTokenExpiry = new Date(Date.now() + 3600000) // 1 hour from now
+
+    // Hash the token before saving
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex')
+
+    // Save the hashed token and expiry to the user
+    user.resetToken = hashedToken
+    user.resetTokenExpiry = resetTokenExpiry
+    await user.save()
+
+    return {
+      resetToken,
+      resetTokenExpiry
+    }
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await connectDB()
+
+    if (newPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters long')
+    }
+
+    // Hash the token to compare with stored hash
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex')
+
+    // Find user with valid reset token
+    const user = await User.findOne({
+      resetToken: hashedToken,
+      resetTokenExpiry: { $gt: Date.now() }
+    })
+
+    if (!user) {
+      throw new Error('Invalid or expired reset token')
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12)
+
+    // Update user password and clear reset token
+    user.password = hashedPassword
+    user.resetToken = undefined
+    user.resetTokenExpiry = undefined
+    await user.save()
+  }
+
+  async clearResetToken(email: string): Promise<void> {
+    await connectDB()
+    
+    const user = await User.findOne({ email })
+    if (user) {
+      user.resetToken = undefined
+      user.resetTokenExpiry = undefined
+      await user.save()
     }
   }
 } 

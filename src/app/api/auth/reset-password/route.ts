@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import { UserService } from '@/services/userService';
 
 export async function POST(request: NextRequest) {
+  const userService = new UserService()
   try {
     const { token, password } = await request.json();
 
@@ -15,47 +13,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
+    try {
+      await userService.resetPassword(token, password);
+      
       return NextResponse.json(
-        { error: 'Password must be at least 6 characters long' },
-        { status: 400 }
+        { message: 'Password has been reset successfully' },
+        { status: 200 }
       );
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Password must be at least 6 characters long') {
+          return NextResponse.json(
+            { error: error.message },
+            { status: 400 }
+          );
+        }
+        if (error.message === 'Invalid or expired reset token') {
+          return NextResponse.json(
+            { error: error.message },
+            { status: 400 }
+          );
+        }
+      }
+      throw error; // Re-throw unexpected errors to be caught by outer catch
     }
-
-    await connectDB();
-
-    // Hash the token to compare with stored hash
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(token)
-      .digest('hex');
-
-    // Find user with valid reset token
-    const user = await User.findOne({
-      resetToken: hashedToken,
-      resetTokenExpiry: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid or expired reset token' },
-        { status: 400 }
-      );
-    }
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Update user password and clear reset token
-    user.password = hashedPassword;
-    user.resetToken = undefined;
-    user.resetTokenExpiry = undefined;
-    await user.save();
-
-    return NextResponse.json(
-      { message: 'Password has been reset successfully' },
-      { status: 200 }
-    );
   } catch (error) {
     console.error('Password reset error:', error);
     return NextResponse.json(

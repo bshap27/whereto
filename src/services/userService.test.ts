@@ -94,4 +94,93 @@ describe('UserService (integration with mongodb-memory-server)', () => {
   it('throws when updating a non-existent user', async () => {
     await expect(userService.updateUser('ghost@example.com', { name: 'Ghost' })).rejects.toThrow('User not found');
   });
+
+  describe('Password Reset', () => {
+    it('generates reset token for existing user', async () => {
+      const userData = {
+        name: 'Grace',
+        email: 'grace@example.com',
+        password: 'password123',
+      };
+      await userService.createUser(userData);
+
+      const resetData = await userService.generateResetToken(userData.email);
+      
+      expect(resetData.resetToken).toBeDefined();
+      expect(resetData.resetTokenExpiry).toBeInstanceOf(Date);
+      expect(resetData.resetTokenExpiry.getTime()).toBeGreaterThan(Date.now());
+
+      // Check that token was saved to database
+      const dbUser = await User.findOne({ email: userData.email });
+      expect(dbUser!.resetToken).toBeDefined();
+      expect(dbUser!.resetTokenExpiry).toBeDefined();
+    });
+
+    it('throws when generating reset token for non-existent user', async () => {
+      await expect(userService.generateResetToken('nonexistent@example.com')).rejects.toThrow('User not found');
+    });
+
+    it('resets password with valid token', async () => {
+      const userData = {
+        name: 'Henry',
+        email: 'henry@example.com',
+        password: 'oldpassword123',
+      };
+      await userService.createUser(userData);
+
+      // Generate reset token
+      const { resetToken } = await userService.generateResetToken(userData.email);
+
+      // Reset password
+      const newPassword = 'newpassword456';
+      await userService.resetPassword(resetToken, newPassword);
+
+      // Verify password was changed
+      const dbUser = await User.findOne({ email: userData.email });
+      expect(dbUser!.password).not.toBe('oldpassword123');
+      expect(dbUser!.resetToken).toBeUndefined();
+      expect(dbUser!.resetTokenExpiry).toBeUndefined();
+    });
+
+    it('throws when resetting password with invalid token', async () => {
+      await expect(userService.resetPassword('invalid-token', 'newpassword123')).rejects.toThrow('Invalid or expired reset token');
+    });
+
+    it('throws when resetting password with short password', async () => {
+      const userData = {
+        name: 'Ivy',
+        email: 'ivy@example.com',
+        password: 'password123',
+      };
+      await userService.createUser(userData);
+
+      const { resetToken } = await userService.generateResetToken(userData.email);
+
+      await expect(userService.resetPassword(resetToken, '123')).rejects.toThrow('Password must be at least 6 characters long');
+    });
+
+    it('clears reset token', async () => {
+      const userData = {
+        name: 'Jack',
+        email: 'jack@example.com',
+        password: 'password123',
+      };
+      await userService.createUser(userData);
+
+      // Generate reset token
+      await userService.generateResetToken(userData.email);
+
+      // Clear reset token
+      await userService.clearResetToken(userData.email);
+
+      // Verify token was cleared
+      const dbUser = await User.findOne({ email: userData.email });
+      expect(dbUser!.resetToken).toBeUndefined();
+      expect(dbUser!.resetTokenExpiry).toBeUndefined();
+    });
+
+    it('clears reset token for non-existent user without error', async () => {
+      await expect(userService.clearResetToken('nonexistent@example.com')).resolves.not.toThrow();
+    });
+  });
 }); 
