@@ -51,11 +51,16 @@ export async function POST(request: NextRequest) {
         );
       }
     } catch (error) {
-      // If user not found, still return success for security
-      return NextResponse.json(
-        { message: 'If an account with that email exists, a password reset link has been sent.' },
-        { status: 200 }
-      );
+      // Check if this is a "user not found" error or an actual database error
+      if (error instanceof Error && error.message.includes('User not found')) {
+        // Don't reveal if user exists or not for security
+        return NextResponse.json(
+          { message: 'If an account with that email exists, a password reset link has been sent.' },
+          { status: 200 }
+        );
+      }
+      // Re-throw actual database/system errors to be caught by outer catch
+      throw error;
     }
   } catch (error) {
     console.error('Password reset request error:', error);
