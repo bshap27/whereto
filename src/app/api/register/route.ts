@@ -1,53 +1,39 @@
 import { NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
-import connectDB from '@/lib/mongodb'
-import User from '@/models/User'
+import { UserService } from '@/services/userService'
 
 export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json()
+    const userService = new UserService()
 
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { error: 'Please provide all required fields' },
-        { status: 400 }
-      )
-    }
-
-    await connectDB()
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email })
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'User already exists' },
-        { status: 400 }
-      )
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Create user
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    })
+    const user = await userService.createUser({ name, email, password })
 
     return NextResponse.json(
       { 
         message: 'User created successfully',
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-        }
+        user
       },
       { status: 201 }
     )
   } catch (error) {
     console.error('Registration error:', error)
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message === 'Please provide all required fields') {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        )
+      }
+      if (error.message === 'User already exists') {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        )
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Error creating user' },
       { status: 500 }
