@@ -17,7 +17,9 @@ console.error = (...args) => {
     message.includes('Please provide all required fields') ||
     message.includes('User already exists') ||
     message.includes('Database connection failed') ||
-    message.includes('String error')
+    message.includes('String error') ||
+    message.includes('Profile fetch error:') ||
+    message.includes('Profile update error:')
   )) {
     return; // Suppress these expected test errors
   }
