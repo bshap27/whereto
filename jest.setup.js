@@ -1,3 +1,9 @@
+// Global mock for MongoDB connection to prevent real database connections in unit tests
+jest.mock('@/lib/mongodb', () => ({
+  __esModule: true,
+  default: jest.fn().mockResolvedValue(undefined),
+}));
+
 // Import whatwg-fetch to provide proper Fetch API for Jest + jsdom
 require('whatwg-fetch')
 

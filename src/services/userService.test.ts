@@ -3,12 +3,6 @@ import mongoose from 'mongoose';
 import { UserService } from './userService';
 import User from '@/models/User';
 
-// Mock the connectDB function to prevent real database connections
-jest.mock('@/lib/mongodb', () => ({
-  __esModule: true,
-  default: jest.fn().mockResolvedValue(undefined),
-}));
-
 describe('UserService (integration with mongodb-memory-server)', () => {
   let mongoServer: MongoMemoryServer;
   let userService: UserService;
