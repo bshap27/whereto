@@ -223,7 +223,7 @@ describe('/api/profile', () => {
       expect(mockUser.findOneAndUpdate).not.toHaveBeenCalled()
     })
 
-    it('returns 400 when email is already taken', async () => {
+    it('returns 409 when email is already taken', async () => {
       const existingUser = { _id: 'other123', email: 'jane@example.com' }
 
       mockGetServerSession.mockResolvedValue({
@@ -241,7 +241,7 @@ describe('/api/profile', () => {
       const response = await PUT(request)
       const data = await response.json()
 
-      expect(response.status).toBe(400)
+      expect(response.status).toBe(409)
       expect(data).toEqual({ error: USER_ERRORS.EMAIL_ALREADY_TAKEN })
       expect(mockUser.findOne).toHaveBeenCalledWith({
         $and: [
