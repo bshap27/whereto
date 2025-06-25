@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
 import crypto from 'crypto'
+import { USER_ERRORS, AUTH_ERRORS } from '@/constants/errors'
 
 export interface CreateUserData {
   name: string
@@ -24,7 +25,7 @@ export class UserService {
   async createUser(userData: CreateUserData): Promise<UserResponse> {
     // Validate required fields
     if (!userData.name || !userData.email || !userData.password) {
-      throw new Error('Please provide all required fields')
+      throw new Error(USER_ERRORS.REQUIRED_FIELDS_MISSING)
     }
 
     await connectDB()
@@ -32,7 +33,7 @@ export class UserService {
     // Check if user already exists
     const existingUser = await this.findUserByEmail(userData.email)
     if (existingUser) {
-      throw new Error('User already exists')
+      throw new Error(USER_ERRORS.USER_ALREADY_EXISTS)
     }
 
     // Hash password
@@ -70,7 +71,7 @@ export class UserService {
       })
       
       if (existingUser) {
-        throw new Error('Email is already taken')
+        throw new Error(USER_ERRORS.EMAIL_ALREADY_TAKEN)
       }
     }
 
@@ -81,7 +82,7 @@ export class UserService {
     ).select('-password')
 
     if (!user) {
-      throw new Error('User not found')
+      throw new Error(AUTH_ERRORS.USER_NOT_FOUND)
     }
 
     return {

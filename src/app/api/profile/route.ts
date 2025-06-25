@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { UserService } from '@/services/userService'
+import { AUTH_ERRORS, API_ERRORS, SERVICE_ERRORS, USER_ERRORS } from '@/constants/errors'
 
 // GET - Fetch user profile
 export async function GET() {
@@ -9,7 +10,7 @@ export async function GET() {
     
     if (!session?.user?.email) {
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: AUTH_ERRORS.NOT_AUTHENTICATED },
         { status: 401 }
       )
     }
@@ -18,16 +19,16 @@ export async function GET() {
     
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: AUTH_ERRORS.USER_NOT_FOUND },
         { status: 404 }
       )
     }
 
     return NextResponse.json(user)
   } catch (error) {
-    console.error('Profile fetch error:', error)
+    console.error(API_ERRORS.PROFILE_FETCH_ERROR, error)
     return NextResponse.json(
-      { error: 'Server error' },
+      { error: SERVICE_ERRORS.SERVER_ERROR },
       { status: 500 }
     )
   }
@@ -40,7 +41,7 @@ export async function PUT(req: Request) {
     
     if (!session?.user?.email) {
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: AUTH_ERRORS.NOT_AUTHENTICATED },
         { status: 401 }
       )
     }
@@ -49,7 +50,7 @@ export async function PUT(req: Request) {
     
     if (!name || !email) {
       return NextResponse.json(
-        { error: 'Name and email are required' },
+        { error: USER_ERRORS.NAME_AND_EMAIL_REQUIRED },
         { status: 400 }
       )
     }
@@ -78,7 +79,7 @@ export async function PUT(req: Request) {
   } catch (error) {
     console.error('Profile update error:', error)
     return NextResponse.json(
-      { error: 'Server error' },
+      { error: SERVICE_ERRORS.SERVER_ERROR },
       { status: 500 }
     )
   }

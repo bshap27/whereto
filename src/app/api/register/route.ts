@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { UserService } from '@/services/userService'
+import { USER_ERRORS, SERVICE_ERRORS, API_ERRORS } from '@/constants/errors'
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('Registration error:', error)
+    console.error(API_ERRORS.REGISTRATION_ERROR, error)
     
     // Handle specific error types
     if (error instanceof Error) {
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
     }
     
     return NextResponse.json(
-      { error: 'Error creating user' },
+      { error: SERVICE_ERRORS.SERVER_ERROR },
       { status: 500 }
     )
   }
