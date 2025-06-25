@@ -9,6 +9,9 @@ const { ERROR_MESSAGES } = require('./src/constants/response_messages');
 // Import whatwg-fetch to provide proper Fetch API for Jest + jsdom
 require('whatwg-fetch')
 
+// Import jest-dom for DOM matchers
+require('@testing-library/jest-dom')
+
 // Suppress console.error for expected test errors
 const originalError = console.error;
 console.error = (...args) => {
