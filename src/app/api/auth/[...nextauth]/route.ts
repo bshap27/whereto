@@ -16,6 +16,9 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         await connectDB()
+        if (!credentials) {
+          return null
+        }
         return credentialsAuthorize(credentials)
       }
     })

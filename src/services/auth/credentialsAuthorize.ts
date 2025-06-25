@@ -2,7 +2,12 @@ import User from '@/models/User'
 import bcrypt from 'bcryptjs'
 import { USER_ERRORS, AUTH_ERRORS } from '@/constants/response_messages'
 
-export async function credentialsAuthorize(credentials: any) {
+interface Credentials {
+  email?: string
+  password?: string
+}
+
+export async function credentialsAuthorize(credentials: Credentials) {
   if (!credentials?.email || !credentials?.password) {
     throw new Error(USER_ERRORS.EMAIL_AND_PASSWORD_REQUIRED)
   }

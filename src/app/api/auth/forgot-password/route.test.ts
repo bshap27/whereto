@@ -27,7 +27,7 @@ describe('/api/auth/forgot-password', () => {
     jest.clearAllMocks()
   })
 
-  const createRequest = (body: any): NextRequest => {
+  const createRequest = (body: { email?: string }): NextRequest => {
     return new NextRequest('http://localhost:3000/api/auth/forgot-password', {
       method: 'POST',
       headers: {

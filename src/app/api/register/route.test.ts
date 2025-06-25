@@ -4,7 +4,7 @@ jest.mock('next/server')
 import { POST } from './route'
 import User from '@/models/User'
 import bcrypt from 'bcryptjs'
-import { USER_ERRORS, SERVICE_ERRORS, API_ERRORS, API_SUCCESS_MESSAGES } from '@/constants/response_messages'
+import { USER_ERRORS, SERVICE_ERRORS, API_SUCCESS_MESSAGES } from '@/constants/response_messages'
 
 // Mock the User model
 jest.mock('@/models/User')
@@ -20,7 +20,7 @@ describe('/api/register', () => {
     jest.clearAllMocks()
   })
 
-  const createRequest = (body: any): Request => {
+  const createRequest = (body: { name?: string; email?: string; password?: string }): Request => {
     return new Request('http://localhost:3000/api/register', {
       method: 'POST',
       headers: {

@@ -13,6 +13,19 @@ jest.mock('@/models/User')
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>
 const mockUser = User as jest.MockedClass<typeof User>
 
+interface SessionUser {
+  email?: string
+}
+
+interface Session {
+  user?: SessionUser
+}
+
+interface ProfileUpdateData {
+  name?: string
+  email?: string
+}
+
 describe('/api/profile', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -28,7 +41,7 @@ describe('/api/profile', () => {
 
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
       ;(mockUser.findOne as jest.Mock).mockReturnValue({
         select: jest.fn().mockResolvedValue(mockUserData),
@@ -56,7 +69,7 @@ describe('/api/profile', () => {
     it('returns 401 when session has no user email', async () => {
       mockGetServerSession.mockResolvedValue({
         user: {},
-      } as any)
+      } as Session)
 
       const response = await GET()
       const data = await response.json()
@@ -69,7 +82,7 @@ describe('/api/profile', () => {
     it('returns 404 when user not found', async () => {
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
       ;(mockUser.findOne as jest.Mock).mockReturnValue({
         select: jest.fn().mockResolvedValue(null),
@@ -86,7 +99,7 @@ describe('/api/profile', () => {
     it('returns 500 when database throws error', async () => {
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
       ;(mockUser.findOne as jest.Mock).mockReturnValue({
         select: jest.fn().mockRejectedValue(new Error('Database error')),
@@ -101,7 +114,7 @@ describe('/api/profile', () => {
   })
 
   describe('PUT /api/profile', () => {
-    const createRequest = (body: any) => {
+    const createRequest = (body: ProfileUpdateData) => {
       return new NextRequest('http://localhost:3000/api/profile', {
         method: 'PUT',
         body: JSON.stringify(body),
@@ -120,7 +133,7 @@ describe('/api/profile', () => {
 
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
       // Mock the email check - no existing user with new email
       ;(mockUser.findOne as jest.Mock).mockResolvedValueOnce(null)
@@ -171,7 +184,7 @@ describe('/api/profile', () => {
     it('returns 401 when session has no user email', async () => {
       mockGetServerSession.mockResolvedValue({
         user: {},
-      } as any)
+      } as Session)
 
       const request = createRequest({
         name: 'Jane Doe',
@@ -190,7 +203,7 @@ describe('/api/profile', () => {
     it('returns 400 when name is missing', async () => {
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
       const request = createRequest({
         email: 'jane@example.com',
@@ -208,7 +221,7 @@ describe('/api/profile', () => {
     it('returns 400 when email is missing', async () => {
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
       const request = createRequest({
         name: 'Jane Doe',
@@ -228,10 +241,9 @@ describe('/api/profile', () => {
 
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
-      // Mock the email check - existing user with new email
-      ;(mockUser.findOne as jest.Mock).mockResolvedValueOnce(existingUser)
+      ;(mockUser.findOne as jest.Mock).mockResolvedValue(existingUser)
 
       const request = createRequest({
         name: 'Jane Doe',
@@ -242,7 +254,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(409)
-      expect(data).toEqual({ error: USER_ERRORS.EMAIL_ALREADY_TAKEN })
+      expect(data.error).toBe(USER_ERRORS.EMAIL_ALREADY_TAKEN)
       expect(mockUser.findOne).toHaveBeenCalledWith({
         $and: [
           { email: 'jane@example.com' },
@@ -252,10 +264,44 @@ describe('/api/profile', () => {
       expect(mockUser.findOneAndUpdate).not.toHaveBeenCalled()
     })
 
+    it('allows updating to same email', async () => {
+      const mockUserData = {
+        _id: 'user123',
+        name: 'Jane Doe',
+        email: 'john@example.com',
+      }
+
+      mockGetServerSession.mockResolvedValue({
+        user: { email: 'john@example.com' },
+      } as Session)
+
+      // Mock the email check - no other user with same email
+      ;(mockUser.findOne as jest.Mock).mockResolvedValue(null)
+
+      ;(mockUser.findOneAndUpdate as jest.Mock).mockReturnValue({
+        select: jest.fn().mockResolvedValue(mockUserData),
+      })
+
+      const request = createRequest({
+        name: 'Jane Doe',
+        email: 'john@example.com', // Same email
+      })
+
+      const response = await PUT(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data).toEqual({
+        id: 'user123',
+        name: 'Jane Doe',
+        email: 'john@example.com',
+      })
+    })
+
     it('returns 404 when user not found', async () => {
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
       // Mock the email check - no existing user with new email
       ;(mockUser.findOne as jest.Mock).mockResolvedValueOnce(null)
@@ -280,12 +326,9 @@ describe('/api/profile', () => {
     it('returns 500 when database throws error', async () => {
       mockGetServerSession.mockResolvedValue({
         user: { email: 'john@example.com' },
-      } as any)
+      } as Session)
 
-      // Mock the email check - no existing user with new email
-      ;(mockUser.findOne as jest.Mock).mockResolvedValueOnce(null)
-
-      // Mock the update operation - database error
+      ;(mockUser.findOne as jest.Mock).mockResolvedValue(null)
       ;(mockUser.findOneAndUpdate as jest.Mock).mockReturnValue({
         select: jest.fn().mockRejectedValue(new Error('Database error')),
       })
@@ -296,6 +339,26 @@ describe('/api/profile', () => {
       })
 
       const response = await PUT(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.error).toBe(SERVICE_ERRORS.SERVER_ERROR)
+    })
+
+    it('returns 500 when request body is invalid JSON', async () => {
+      mockGetServerSession.mockResolvedValue({
+        user: { email: 'john@example.com' },
+      } as Session)
+
+      const invalidRequest = new NextRequest('http://localhost:3000/api/profile', {
+        method: 'PUT',
+        body: 'invalid json',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const response = await PUT(invalidRequest)
       const data = await response.json()
 
       expect(response.status).toBe(500)

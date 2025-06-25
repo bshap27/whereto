@@ -42,7 +42,7 @@ describe('UserService (integration with mongodb-memory-server)', () => {
   });
 
   it('throws if required fields are missing', async () => {
-    await expect(userService.createUser({} as any)).rejects.toThrow(USER_ERRORS.REQUIRED_FIELDS_MISSING);
+    await expect(userService.createUser({} as { name: string; email: string; password: string })).rejects.toThrow(USER_ERRORS.REQUIRED_FIELDS_MISSING);
   });
 
   it('throws if user already exists', async () => {

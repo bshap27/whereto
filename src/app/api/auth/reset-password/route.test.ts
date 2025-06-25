@@ -16,7 +16,7 @@ describe('/api/auth/reset-password', () => {
     jest.clearAllMocks()
   })
 
-  const createRequest = (body: any): NextRequest => {
+  const createRequest = (body: { token?: string; password?: string }): NextRequest => {
     return new NextRequest('http://localhost:3000/api/auth/reset-password', {
       method: 'POST',
       headers: {

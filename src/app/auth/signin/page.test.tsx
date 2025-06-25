@@ -20,7 +20,7 @@ jest.mock('next/navigation', () => ({
 
 // Mock next/link
 jest.mock('next/link', () => {
-  return function MockLink({ children, href, ...props }: any) {
+  return function MockLink({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) {
     return (
       <a href={href} {...props}>
         {children}
@@ -45,7 +45,7 @@ describe('SignIn Page', () => {
       refresh: jest.fn(),
       replace: jest.fn(),
       prefetch: jest.fn(),
-    } as any)
+    } as ReturnType<typeof useRouter>)
   })
 
   describe('Initial render and session check', () => {
@@ -67,7 +67,7 @@ describe('SignIn Page', () => {
       mockGetSession.mockResolvedValue({
         user: { email: 'test@example.com' },
         expires: '2024-01-01',
-      } as any)
+      } as Awaited<ReturnType<typeof getSession>>)
 
       render(<SignIn />)
 
@@ -136,7 +136,7 @@ describe('SignIn Page', () => {
     })
 
     it('calls signIn with correct credentials', async () => {
-      mockSignIn.mockResolvedValue({ ok: true, error: null } as any)
+      mockSignIn.mockResolvedValue({ ok: true, error: null } as Awaited<ReturnType<typeof signIn>>)
 
       render(<SignIn />)
 
@@ -158,7 +158,7 @@ describe('SignIn Page', () => {
     })
 
     it('redirects to profile on successful signin', async () => {
-      mockSignIn.mockResolvedValue({ ok: true, error: null } as any)
+      mockSignIn.mockResolvedValue({ ok: true, error: null } as Awaited<ReturnType<typeof signIn>>)
 
       render(<SignIn />)
 
@@ -176,7 +176,7 @@ describe('SignIn Page', () => {
     })
 
     it('displays error message when signin fails', async () => {
-      mockSignIn.mockResolvedValue({ ok: false, error: 'Invalid credentials' } as any)
+      mockSignIn.mockResolvedValue({ ok: false, error: 'Invalid credentials' } as Awaited<ReturnType<typeof signIn>>)
 
       render(<SignIn />)
 
@@ -213,8 +213,8 @@ describe('SignIn Page', () => {
 
     it('clears previous error message on new submission', async () => {
       mockSignIn
-        .mockResolvedValueOnce({ ok: false, error: 'First error' } as any)
-        .mockResolvedValueOnce({ ok: false, error: 'Second error' } as any)
+        .mockResolvedValueOnce({ ok: false, error: 'First error' } as Awaited<ReturnType<typeof signIn>>)
+        .mockResolvedValueOnce({ ok: false, error: 'Second error' } as Awaited<ReturnType<typeof signIn>>)
 
       render(<SignIn />)
 
@@ -241,7 +241,7 @@ describe('SignIn Page', () => {
     })
 
     it('resets loading state after signin attempt', async () => {
-      mockSignIn.mockResolvedValue({ ok: false, error: 'Invalid credentials' } as any)
+      mockSignIn.mockResolvedValue({ ok: false, error: 'Invalid credentials' } as Awaited<ReturnType<typeof signIn>>)
 
       render(<SignIn />)
 
@@ -322,7 +322,7 @@ describe('SignIn Page', () => {
     })
 
     it('displays error message in red container', async () => {
-      mockSignIn.mockResolvedValue({ ok: false, error: 'Invalid credentials' } as any)
+      mockSignIn.mockResolvedValue({ ok: false, error: 'Invalid credentials' } as Awaited<ReturnType<typeof signIn>>)
 
       render(<SignIn />)
 
