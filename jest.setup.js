@@ -1,19 +1,6 @@
 // Import whatwg-fetch to provide proper Fetch API for Jest + jsdom
 require('whatwg-fetch')
 
-// Mock NextResponse
-global.NextResponse = {
-  json: (data, options = {}) => {
-    return new Response(JSON.stringify(data), {
-      status: options.status || 200,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      }
-    });
-  }
-};
-
 // Suppress console.error during tests
 const originalError = console.error;
 console.error = (...args) => {

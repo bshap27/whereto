@@ -1,17 +1,5 @@
 // Mock NextResponse before importing the route
-jest.mock('next/server', () => ({
-  NextResponse: {
-    json: (data: any, options: any = {}) => {
-      return new Response(JSON.stringify(data), {
-        status: options.status || 200,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers
-        }
-      });
-    }
-  }
-}))
+jest.mock('next/server')
 
 import { POST } from './route'
 import { UserService } from '@/services/userService'
