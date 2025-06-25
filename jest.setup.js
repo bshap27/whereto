@@ -38,3 +38,21 @@ global.NextResponse = {
 
 // Mock NextRequest
 global.NextRequest = global.Request;
+
+// Suppress console.error during tests
+const originalError = console.error;
+console.error = (...args) => {
+  // Only suppress specific error messages that are expected during tests
+  const message = args[0];
+  if (typeof message === 'string' && (
+    message.includes('Registration error:') ||
+    message.includes('Please provide all required fields') ||
+    message.includes('User already exists') ||
+    message.includes('Database connection failed') ||
+    message.includes('String error')
+  )) {
+    return; // Suppress these expected test errors
+  }
+  // Allow other console.error messages to pass through
+  originalError.apply(console, args);
+}; 
