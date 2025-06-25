@@ -30,7 +30,7 @@ export class UserService {
     await connectDB()
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email: userData.email })
+    const existingUser = await this.findUserByEmail(userData.email)
     if (existingUser) {
       throw new Error('User already exists')
     }
@@ -94,7 +94,7 @@ export class UserService {
   async generateResetToken(email: string): Promise<ResetTokenData> {
     await connectDB()
     
-    const user = await User.findOne({ email })
+    const user = await this.findUserByEmail(email)
     if (!user) {
       throw new Error('User not found')
     }
@@ -156,7 +156,7 @@ export class UserService {
   async clearResetToken(email: string): Promise<void> {
     await connectDB()
     
-    const user = await User.findOne({ email })
+    const user = await this.findUserByEmail(email)
     if (user) {
       user.resetToken = undefined
       user.resetTokenExpiry = undefined

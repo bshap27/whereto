@@ -49,7 +49,9 @@ describe('/api/register', () => {
       ;(mockBcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword123')
 
       // Mock User.findOne - no existing user
-      ;(mockUser.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockUser.findOne as jest.Mock).mockReturnValue({
+        select: jest.fn().mockResolvedValue(null)
+      })
 
       // Mock User.create
       ;(mockUser.create as jest.Mock).mockResolvedValue(mockUserDoc)
@@ -110,7 +112,9 @@ describe('/api/register', () => {
       }
 
       // Mock User.findOne - existing user found
-      ;(mockUser.findOne as jest.Mock).mockResolvedValue(existingUser)
+      ;(mockUser.findOne as jest.Mock).mockReturnValue({
+        select: jest.fn().mockResolvedValue(existingUser)
+      })
 
       // Act
       const request = createRequest(userData)
@@ -133,7 +137,9 @@ describe('/api/register', () => {
       }
 
       // Mock User.findOne to throw error
-      ;(mockUser.findOne as jest.Mock).mockRejectedValue(new Error('Database connection failed'))
+      ;(mockUser.findOne as jest.Mock).mockReturnValue({
+        select: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+      })
 
       // Act
       const request = createRequest(userData)
@@ -154,7 +160,9 @@ describe('/api/register', () => {
       }
 
       // Mock User.findOne - no existing user
-      ;(mockUser.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockUser.findOne as jest.Mock).mockReturnValue({
+        select: jest.fn().mockResolvedValue(null)
+      })
 
       // Mock bcrypt.hash to throw error
       ;(mockBcrypt.hash as jest.Mock).mockRejectedValue(new Error('Hashing failed'))
