@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '@/services/userService';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { USER_ERRORS, SERVICE_ERRORS, API_SUCCESS_MESSAGES } from '@/constants/response_messages';
 
 export async function POST(request: NextRequest) {
   const userService = new UserService()
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: USER_ERRORS.EMAIL_REQUIRED },
         { status: 400 }
       );
     }
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
       if (!user) {
         // Don't reveal if user exists or not for security
         return NextResponse.json(
-          { message: 'If an account with that email exists, a password reset link has been sent.' },
+          { message: API_SUCCESS_MESSAGES.PASSWORD_RESET_EMAIL_SENT },
           { status: 200 }
         );
       }
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         await sendPasswordResetEmail(email, resetUrl);
         
         return NextResponse.json(
-          { message: 'If an account with that email exists, a password reset link has been sent.' },
+          { message: API_SUCCESS_MESSAGES.PASSWORD_RESET_EMAIL_SENT },
           { status: 200 }
         );
       } catch (emailError) {
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
         
         console.error('Email sending failed:', emailError);
         return NextResponse.json(
-          { error: 'Failed to send password reset email. Please try again later.' },
+          { error: SERVICE_ERRORS.EMAIL_SENDING_FAILED },
           { status: 500 }
         );
       }
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       if (error instanceof Error && error.message.includes('User not found')) {
         // Don't reveal if user exists or not for security
         return NextResponse.json(
-          { message: 'If an account with that email exists, a password reset link has been sent.' },
+          { message: API_SUCCESS_MESSAGES.PASSWORD_RESET_EMAIL_SENT },
           { status: 200 }
         );
       }
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Password reset request error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: SERVICE_ERRORS.INTERNAL_SERVER_ERROR },
       { status: 500 }
     );
   }

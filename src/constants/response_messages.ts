@@ -13,6 +13,8 @@ export const USER_ERRORS = {
   EMAIL_ALREADY_TAKEN: 'Email is already taken',
   NAME_AND_EMAIL_REQUIRED: 'Name and email are required',
   EMAIL_AND_PASSWORD_REQUIRED: 'Please enter an email and password',
+  EMAIL_REQUIRED: 'Email is required',
+  TOKEN_AND_PASSWORD_REQUIRED: 'Token and password are required',
 } as const
 
 // Database & Service Errors
@@ -22,6 +24,8 @@ export const SERVICE_ERRORS = {
   HASHING_FAILED: 'Hashing failed',
   ERROR_CREATING_USER: 'Error creating user',
   SERVER_ERROR: 'Server error',
+  INTERNAL_SERVER_ERROR: 'Internal server error',
+  EMAIL_SENDING_FAILED: 'Failed to send password reset email. Please try again later.',
 } as const
 
 // API Response Errors
@@ -40,6 +44,8 @@ export const VALIDATION_ERRORS = {
 
 export const API_SUCCESS_MESSAGES = {
   USER_CREATED_SUCCESS: 'User created successfully',
+  PASSWORD_RESET_EMAIL_SENT: 'If an account with that email exists, a password reset link has been sent.',
+  PASSWORD_RESET_SUCCESS: 'Password has been reset successfully',
 } as const
 
 // All error messages combined for easy access

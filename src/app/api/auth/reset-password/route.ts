@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '@/services/userService';
+import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS, SERVICE_ERRORS, API_SUCCESS_MESSAGES } from '@/constants/response_messages';
 
 export async function POST(request: NextRequest) {
   const userService = new UserService()
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     if (!token || !password) {
       return NextResponse.json(
-        { error: 'Token and password are required' },
+        { error: USER_ERRORS.TOKEN_AND_PASSWORD_REQUIRED },
         { status: 400 }
       );
     }
@@ -17,18 +18,18 @@ export async function POST(request: NextRequest) {
       await userService.resetPassword(token, password);
       
       return NextResponse.json(
-        { message: 'Password has been reset successfully' },
+        { message: API_SUCCESS_MESSAGES.PASSWORD_RESET_SUCCESS },
         { status: 200 }
       );
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message === 'Password must be at least 6 characters long') {
+        if (error.message === VALIDATION_ERRORS.PASSWORD_TOO_SHORT) {
           return NextResponse.json(
             { error: error.message },
             { status: 400 }
           );
         }
-        if (error.message === 'Invalid or expired reset token') {
+        if (error.message === AUTH_ERRORS.INVALID_RESET_TOKEN) {
           return NextResponse.json(
             { error: error.message },
             { status: 400 }
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Password reset error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: SERVICE_ERRORS.INTERNAL_SERVER_ERROR },
       { status: 500 }
     );
   }

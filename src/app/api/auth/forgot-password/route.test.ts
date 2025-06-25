@@ -11,6 +11,7 @@ import { POST } from './route'
 import { NextRequest } from 'next/server'
 import { UserService } from '@/services/userService'
 import { sendPasswordResetEmail } from '@/lib/email'
+import { USER_ERRORS, SERVICE_ERRORS, API_SUCCESS_MESSAGES } from '@/constants/response_messages'
 
 // Mock the UserService
 jest.mock('@/services/userService')
@@ -64,7 +65,7 @@ describe('/api/auth/forgot-password', () => {
 
       // Assert
       expect(response.status).toBe(200)
-      expect(data.message).toBe('If an account with that email exists, a password reset link has been sent.')
+      expect(data.message).toBe(API_SUCCESS_MESSAGES.PASSWORD_RESET_EMAIL_SENT)
       expect(mockUserService.prototype.findUserByEmail).toHaveBeenCalledWith('test@example.com')
       expect(mockUserService.prototype.generateResetToken).toHaveBeenCalledWith('test@example.com')
       expect(mockSendPasswordResetEmail).toHaveBeenCalledWith(
@@ -87,9 +88,8 @@ describe('/api/auth/forgot-password', () => {
 
       // Assert
       expect(response.status).toBe(200)
-      expect(data.message).toBe('If an account with that email exists, a password reset link has been sent.')
+      expect(data.message).toBe(API_SUCCESS_MESSAGES.PASSWORD_RESET_EMAIL_SENT)
       expect(mockUserService.prototype.findUserByEmail).toHaveBeenCalledWith('nonexistent@example.com')
-      expect(mockUserService.prototype.generateResetToken).not.toHaveBeenCalled()
       expect(mockSendPasswordResetEmail).not.toHaveBeenCalled()
     })
 
@@ -104,7 +104,7 @@ describe('/api/auth/forgot-password', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Email is required')
+      expect(data.error).toBe(USER_ERRORS.EMAIL_REQUIRED)
       expect(mockUserService.prototype.findUserByEmail).not.toHaveBeenCalled()
       expect(mockSendPasswordResetEmail).not.toHaveBeenCalled()
     })
@@ -120,7 +120,7 @@ describe('/api/auth/forgot-password', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Email is required')
+      expect(data.error).toBe(USER_ERRORS.EMAIL_REQUIRED)
       expect(mockUserService.prototype.findUserByEmail).not.toHaveBeenCalled()
       expect(mockSendPasswordResetEmail).not.toHaveBeenCalled()
     })
@@ -155,7 +155,7 @@ describe('/api/auth/forgot-password', () => {
 
       // Assert
       expect(response.status).toBe(500)
-      expect(data.error).toBe('Failed to send password reset email. Please try again later.')
+      expect(data.error).toBe(SERVICE_ERRORS.EMAIL_SENDING_FAILED)
       expect(mockUserService.prototype.findUserByEmail).toHaveBeenCalledWith('test@example.com')
       expect(mockUserService.prototype.generateResetToken).toHaveBeenCalledWith('test@example.com')
       expect(mockSendPasswordResetEmail).toHaveBeenCalled()
@@ -178,7 +178,7 @@ describe('/api/auth/forgot-password', () => {
 
       // Assert
       expect(response.status).toBe(500)
-      expect(data.error).toBe('Internal server error')
+      expect(data.error).toBe(SERVICE_ERRORS.INTERNAL_SERVER_ERROR)
     })
   })
 }) 

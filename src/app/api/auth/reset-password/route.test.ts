@@ -4,6 +4,7 @@ jest.mock('next/server')
 import { POST } from './route'
 import { NextRequest } from 'next/server'
 import { UserService } from '@/services/userService'
+import { USER_ERRORS, AUTH_ERRORS, VALIDATION_ERRORS, SERVICE_ERRORS, API_SUCCESS_MESSAGES } from '@/constants/response_messages'
 
 // Mock the UserService
 jest.mock('@/services/userService')
@@ -41,7 +42,7 @@ describe('/api/auth/reset-password', () => {
 
       // Assert
       expect(response.status).toBe(200)
-      expect(data.message).toBe('Password has been reset successfully')
+      expect(data.message).toBe(API_SUCCESS_MESSAGES.PASSWORD_RESET_SUCCESS)
       expect(mockUserService.prototype.resetPassword).toHaveBeenCalledWith('valid-reset-token-123', 'newPassword123')
     })
 
@@ -56,7 +57,7 @@ describe('/api/auth/reset-password', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Token and password are required')
+      expect(data.error).toBe(USER_ERRORS.TOKEN_AND_PASSWORD_REQUIRED)
       expect(mockUserService.prototype.resetPassword).not.toHaveBeenCalled()
     })
 
@@ -71,7 +72,7 @@ describe('/api/auth/reset-password', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Token and password are required')
+      expect(data.error).toBe(USER_ERRORS.TOKEN_AND_PASSWORD_REQUIRED)
       expect(mockUserService.prototype.resetPassword).not.toHaveBeenCalled()
     })
 
@@ -82,7 +83,7 @@ describe('/api/auth/reset-password', () => {
 
       // Mock UserService.resetPassword to throw validation error
       ;(mockUserService.prototype.resetPassword as jest.Mock).mockRejectedValue(
-        new Error('Password must be at least 6 characters long')
+        new Error(VALIDATION_ERRORS.PASSWORD_TOO_SHORT)
       )
 
       // Act
@@ -92,7 +93,7 @@ describe('/api/auth/reset-password', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Password must be at least 6 characters long')
+      expect(data.error).toBe(VALIDATION_ERRORS.PASSWORD_TOO_SHORT)
       expect(mockUserService.prototype.resetPassword).toHaveBeenCalledWith('valid-reset-token-123', '123')
     })
 
@@ -103,7 +104,7 @@ describe('/api/auth/reset-password', () => {
 
       // Mock UserService.resetPassword to throw token error
       ;(mockUserService.prototype.resetPassword as jest.Mock).mockRejectedValue(
-        new Error('Invalid or expired reset token')
+        new Error(AUTH_ERRORS.INVALID_RESET_TOKEN)
       )
 
       // Act
@@ -113,7 +114,7 @@ describe('/api/auth/reset-password', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Invalid or expired reset token')
+      expect(data.error).toBe(AUTH_ERRORS.INVALID_RESET_TOKEN)
       expect(mockUserService.prototype.resetPassword).toHaveBeenCalledWith('invalid-token', 'newPassword123')
     })
 
@@ -134,7 +135,7 @@ describe('/api/auth/reset-password', () => {
 
       // Assert
       expect(response.status).toBe(500)
-      expect(data.error).toBe('Internal server error')
+      expect(data.error).toBe(SERVICE_ERRORS.INTERNAL_SERVER_ERROR)
       expect(mockUserService.prototype.resetPassword).toHaveBeenCalledWith('valid-reset-token-123', 'newPassword123')
     })
   })
