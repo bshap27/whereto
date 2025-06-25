@@ -9,7 +9,8 @@
     "start": "next start",
     "start:staging": "NODE_ENV=staging next start",
     "lint": "next lint",
-    "test": "jest --coverage"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.9.1",
