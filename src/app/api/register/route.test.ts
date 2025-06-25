@@ -4,6 +4,7 @@ jest.mock('next/server')
 import { POST } from './route'
 import User from '@/models/User'
 import bcrypt from 'bcryptjs'
+import { USER_ERRORS, SERVICE_ERRORS } from '@/constants/errors'
 
 // Mock the User model
 jest.mock('@/models/User')
@@ -93,7 +94,7 @@ describe('/api/register', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('Please provide all required fields')
+      expect(data.error).toBe(USER_ERRORS.REQUIRED_FIELDS_MISSING)
       expect(mockUser.findOne).not.toHaveBeenCalled()
       expect(mockUser.create).not.toHaveBeenCalled()
     })
@@ -123,7 +124,7 @@ describe('/api/register', () => {
 
       // Assert
       expect(response.status).toBe(400)
-      expect(data.error).toBe('User already exists')
+      expect(data.error).toBe(USER_ERRORS.USER_ALREADY_EXISTS)
       expect(mockUser.findOne).toHaveBeenCalledWith({ email: 'john@example.com' })
       expect(mockUser.create).not.toHaveBeenCalled()
     })
@@ -148,7 +149,7 @@ describe('/api/register', () => {
 
       // Assert
       expect(response.status).toBe(500)
-      expect(data.error).toBe('Error creating user')
+      expect(data.error).toBe(SERVICE_ERRORS.SERVER_ERROR)
     })
 
     it('returns 500 when bcrypt throws error', async () => {
@@ -174,7 +175,7 @@ describe('/api/register', () => {
 
       // Assert
       expect(response.status).toBe(500)
-      expect(data.error).toBe('Error creating user')
+      expect(data.error).toBe(SERVICE_ERRORS.SERVER_ERROR)
     })
   })
 }) 

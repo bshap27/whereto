@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { GET, PUT } from './route'
 import User from '@/models/User'
+import { AUTH_ERRORS, USER_ERRORS, SERVICE_ERRORS } from '@/constants/errors'
 
 // Mock next-auth
 jest.mock('next-auth')
@@ -48,7 +49,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(401)
-      expect(data).toEqual({ error: 'Not authenticated' })
+      expect(data.error).toBe(AUTH_ERRORS.NOT_AUTHENTICATED)
       expect(mockUser.findOne).not.toHaveBeenCalled()
     })
 
@@ -61,7 +62,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(401)
-      expect(data).toEqual({ error: 'Not authenticated' })
+      expect(data.error).toBe(AUTH_ERRORS.NOT_AUTHENTICATED)
       expect(mockUser.findOne).not.toHaveBeenCalled()
     })
 
@@ -78,7 +79,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(404)
-      expect(data).toEqual({ error: 'User not found' })
+      expect(data.error).toBe(AUTH_ERRORS.USER_NOT_FOUND)
       expect(mockUser.findOne).toHaveBeenCalledWith({ email: 'john@example.com' })
     })
 
@@ -95,7 +96,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(500)
-      expect(data).toEqual({ error: 'Server error' })
+      expect(data.error).toBe(SERVICE_ERRORS.SERVER_ERROR)
     })
   })
 
@@ -162,7 +163,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(401)
-      expect(data).toEqual({ error: 'Not authenticated' })
+      expect(data.error).toBe(AUTH_ERRORS.NOT_AUTHENTICATED)
       expect(mockUser.findOne).not.toHaveBeenCalled()
       expect(mockUser.findOneAndUpdate).not.toHaveBeenCalled()
     })
@@ -217,7 +218,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(400)
-      expect(data).toEqual({ error: 'Name and email are required' })
+      expect(data.error).toBe(USER_ERRORS.NAME_AND_EMAIL_REQUIRED)
       expect(mockUser.findOne).not.toHaveBeenCalled()
       expect(mockUser.findOneAndUpdate).not.toHaveBeenCalled()
     })
@@ -241,7 +242,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(400)
-      expect(data).toEqual({ error: 'Email is already taken' })
+      expect(data).toEqual({ error: USER_ERRORS.EMAIL_ALREADY_TAKEN })
       expect(mockUser.findOne).toHaveBeenCalledWith({
         $and: [
           { email: 'jane@example.com' },
@@ -273,7 +274,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(404)
-      expect(data).toEqual({ error: 'User not found' })
+      expect(data.error).toBe(AUTH_ERRORS.USER_NOT_FOUND)
     })
 
     it('returns 500 when database throws error', async () => {
@@ -298,7 +299,7 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(500)
-      expect(data).toEqual({ error: 'Server error' })
+      expect(data.error).toBe(SERVICE_ERRORS.SERVER_ERROR)
     })
   })
 }) 

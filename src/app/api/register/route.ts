@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { UserService } from '@/services/userService'
-import { USER_ERRORS, SERVICE_ERRORS, API_ERRORS } from '@/constants/errors'
+import { SERVICE_ERRORS, API_ERRORS } from '@/constants/errors'
 
 export async function POST(req: Request) {
   try {
