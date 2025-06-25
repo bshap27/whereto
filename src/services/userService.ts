@@ -91,11 +91,6 @@ export class UserService {
     }
   }
 
-  async findUserByEmailForPasswordReset(email: string) {
-    await connectDB()
-    return User.findOne({ email })
-  }
-
   async generateResetToken(email: string): Promise<ResetTokenData> {
     await connectDB()
     

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Check if user exists and generate reset token
-      const user = await userService.findUserByEmailForPasswordReset(email);
+      const user = await userService.findUserByEmail(email);
       
       if (!user) {
         // Don't reveal if user exists or not for security
