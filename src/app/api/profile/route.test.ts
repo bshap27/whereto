@@ -138,7 +138,11 @@ describe('/api/profile', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data).toEqual(mockUserData)
+      expect(data).toEqual({
+        id: 'user123',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+      })
       expect(mockUser.findOneAndUpdate).toHaveBeenCalledWith(
         { email: 'john@example.com' },
         { name: 'Jane Doe', email: 'jane@example.com' },
